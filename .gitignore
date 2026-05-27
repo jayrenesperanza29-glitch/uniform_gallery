@@ -1,0 +1,22 @@
+# Environment
+.env
+*.env.local
+
+# Node
+node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Uploads (local dev only — use Cloudinary in production)
+backend/static/images/
+!backend/static/images/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

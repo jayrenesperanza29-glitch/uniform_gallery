@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: uniform_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: uniform_gallery
+      POSTGRES_USER: uniform_user
+      POSTGRES_PASSWORD: uniform_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uniform_user -d uniform_gallery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: uniform_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://uniform_user:uniform_pass@db:5432/uniform_gallery
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      FLASK_ENV: development
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./backend/static/images:/app/static/images
+
+  frontend:
+    build: ./frontend
+    container_name: uniform_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: uniform_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - frontend
+    profiles:
+      - tunnel
+
+volumes:
+  postgres_data:
