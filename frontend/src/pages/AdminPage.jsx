@@ -2,14 +2,13 @@ import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import Topbar from '../components/Topbar.jsx'
 
-// ── Uniform modal ────────────────────────────────────────────────────────────
+// ── Uniform modal ─────────────────────────────────────────────────────────────
 function UniformModal({ uniform, onClose, onSave, authFetch }) {
-  const [form, setForm]     = useState(uniform || { uniform_type: '', description: '', image_path: '' })
-  const [error, setError]   = useState('')
-  const [loading, setLoading] = useState(false)
+  const [form, setForm]         = useState(uniform || { uniform_type: '', description: '', image_path: '' })
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef()
-
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const handleUpload = async e => {
@@ -19,7 +18,7 @@ function UniformModal({ uniform, onClose, onSave, authFetch }) {
     const fd = new FormData()
     fd.append('file', file)
     try {
-      const res = await authFetch('/api/admin/upload', { method: 'POST', body: fd })
+      const res  = await authFetch('/api/admin/upload', { method: 'POST', body: fd })
       const text = await res.text()
       let d
       try { d = JSON.parse(text) } catch { throw new Error(`Server error (${res.status})`) }
@@ -41,7 +40,7 @@ function UniformModal({ uniform, onClose, onSave, authFetch }) {
       const res = await authFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify(form),
       })
       if (!res.ok) {
         const text = await res.text()
@@ -77,16 +76,18 @@ function UniformModal({ uniform, onClose, onSave, authFetch }) {
           <label>Image</label>
           <input value={form.image_path} onChange={set('image_path')} placeholder="/static/images/filename.png" />
           <div style={{ marginTop: 8 }}>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleUpload} />
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
             <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? 'Uploading…' : '📁 Upload Image'}
             </button>
           </div>
-          {form.image_path && <img src={form.image_path} alt="" style={{ marginTop:12, maxHeight:120, borderRadius:4, border:'1px solid var(--border)' }} />}
+          {form.image_path && (
+            <img src={form.image_path} alt="" style={{ marginTop: 12, maxHeight: 120, borderRadius: 4, border: '1px solid var(--border)' }} />
+          )}
         </div>
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={loading} style={{ width:'auto' }}>
+          <button className="btn btn-primary" onClick={handleSave} disabled={loading} style={{ width: 'auto' }}>
             {loading ? 'Saving…' : 'Save'}
           </button>
         </div>
@@ -95,10 +96,10 @@ function UniformModal({ uniform, onClose, onSave, authFetch }) {
   )
 }
 
-// ── Price modal ──────────────────────────────────────────────────────────────
+// ── Price modal ───────────────────────────────────────────────────────────────
 function PriceModal({ price, uniforms, onClose, onSave, authFetch }) {
-  const [form, setForm]   = useState(price || { uniform_id: uniforms[0]?.uniform_id || '', label: 'S', amount: '' })
-  const [error, setError] = useState('')
+  const [form, setForm]     = useState(price || { uniform_id: uniforms[0]?.uniform_id || '', label: 'S', amount: '' })
+  const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -111,7 +112,7 @@ function PriceModal({ price, uniforms, onClose, onSave, authFetch }) {
       const res = await authFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, amount: parseFloat(form.amount) })
+        body: JSON.stringify({ ...form, amount: parseFloat(form.amount) }),
       })
       if (!res.ok) {
         const text = await res.text()
@@ -153,7 +154,7 @@ function PriceModal({ price, uniforms, onClose, onSave, authFetch }) {
         </div>
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={loading} style={{ width:'auto' }}>
+          <button className="btn btn-primary" onClick={handleSave} disabled={loading} style={{ width: 'auto' }}>
             {loading ? 'Saving…' : 'Save'}
           </button>
         </div>
@@ -162,17 +163,75 @@ function PriceModal({ price, uniforms, onClose, onSave, authFetch }) {
   )
 }
 
-// ── Main AdminPage ───────────────────────────────────────────────────────────
+// ── Mobile card components ────────────────────────────────────────────────────
+function UniformCard({ u, onEdit, onDelete }) {
+  return (
+    <div className="admin-card">
+      <div className="admin-card-row">
+        {u.image_path
+          ? <img src={u.image_path} alt="" className="admin-card-img" onError={e => e.target.style.display = 'none'} />
+          : <div className="admin-card-img-placeholder">👔</div>
+        }
+        <div className="admin-card-body">
+          <div className="admin-card-id">#{u.uniform_id}</div>
+          <div className="admin-card-title">{u.uniform_type}</div>
+          <p className="admin-card-desc">{u.description}</p>
+        </div>
+      </div>
+      <div className="admin-card-actions">
+        <button className="btn btn-ghost btn-sm" onClick={() => onEdit(u)}>Edit</button>
+        <button className="btn btn-danger btn-sm" onClick={() => onDelete(u.uniform_id)}>Delete</button>
+      </div>
+    </div>
+  )
+}
+
+function PriceCard({ p, onEdit, onDelete }) {
+  return (
+    <div className="admin-card">
+      <div className="admin-card-price-row">
+        <div>
+          <div className="admin-card-id">#{p.price_id}</div>
+          <div className="admin-card-title">{p.uniform_type}</div>
+          <div className="admin-card-size">Size: <strong>{p.label}</strong></div>
+        </div>
+        <div className="admin-card-amount">₱ {parseFloat(p.amount).toFixed(2)}</div>
+      </div>
+      <div className="admin-card-actions">
+        <button className="btn btn-ghost btn-sm" onClick={() => onEdit(p)}>Edit</button>
+        <button className="btn btn-danger btn-sm" onClick={() => onDelete(p.price_id)}>Delete</button>
+      </div>
+    </div>
+  )
+}
+
+function StudentCard({ s }) {
+  return (
+    <div className="admin-card">
+      <div className="admin-card-student-row">
+        <div className="admin-card-avatar">{s.student_name?.[0]?.toUpperCase() || '?'}</div>
+        <div>
+          <div className="admin-card-title">{s.student_name}</div>
+          <div className="admin-card-email">{s.email}</div>
+          <div className="admin-card-date">
+            Registered {new Date(s.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main AdminPage ────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { authFetch } = useAuth()
-  const [tab, setTab]         = useState('uniforms')
+  const [tab, setTab]           = useState('uniforms')
   const [uniforms, setUniforms] = useState([])
   const [allPrices, setAllPrices] = useState([])
   const [students, setStudents] = useState([])
-  const [uModal, setUModal]   = useState(null)  // null | 'new' | uniform obj
-  const [pModal, setPModal]   = useState(null)  // null | 'new' | price obj
-  const [loading, setLoading] = useState(false)
-  const [msg, setMsg]         = useState('')
+  const [uModal, setUModal]     = useState(null)
+  const [pModal, setPModal]     = useState(null)
+  const [msg, setMsg]           = useState('')
 
   const loadUniforms = () => {
     authFetch('/api/uniforms').then(r => r.json()).then(d => {
@@ -209,6 +268,10 @@ export default function AdminPage() {
     loadUniforms()
   }
 
+  const EMPTY = (cols, msg) => (
+    <tr><td colSpan={cols} style={{ textAlign: 'center', color: 'var(--ink-soft)', padding: '32px' }}>{msg}</td></tr>
+  )
+
   return (
     <div className="app-shell">
       <Topbar />
@@ -222,108 +285,140 @@ export default function AdminPage() {
         {msg && <div className="success-msg fade-up">{msg}</div>}
 
         <div className="admin-tabs">
-          {['uniforms','prices','students'].map(t => (
-            <button key={t} className={`admin-tab${tab===t?' active':''}`} onClick={() => setTab(t)}>
-              {t.charAt(0).toUpperCase()+t.slice(1)}
+          {['uniforms', 'prices', 'students'].map(t => (
+            <button key={t} className={`admin-tab${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
+              {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* UNIFORMS TAB */}
+        {/* ── UNIFORMS ── */}
         {tab === 'uniforms' && (
           <div className="fade-up">
             <div className="admin-section-header">
               <h2>Uniforms</h2>
-              <button className="btn btn-primary btn-sm" style={{width:'auto'}} onClick={() => setUModal('new')}>
+              <button className="btn btn-primary btn-sm" style={{ width: 'auto' }} onClick={() => setUModal('new')}>
                 + Add Uniform
               </button>
             </div>
-            <table className="data-table">
-              <thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Image</th><th>Actions</th></tr></thead>
-              <tbody>
-                {uniforms.map(u => (
-                  <tr key={u.uniform_id}>
-                    <td>{u.uniform_id}</td>
-                    <td><strong>{u.uniform_type}</strong></td>
-                    <td style={{maxWidth:260,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.description}</td>
-                    <td>
-                      {u.image_path
-                        ? <img src={u.image_path} alt="" style={{height:40,borderRadius:3}} onError={e=>e.target.style.display='none'} />
-                        : <span style={{color:'var(--ink-soft)',fontSize:'0.8rem'}}>None</span>
-                      }
-                    </td>
-                    <td>
-                      <div className="actions">
-                        <button className="btn btn-ghost btn-sm" onClick={() => setUModal(u)}>Edit</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => deleteUniform(u.uniform_id)}>Delete</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {uniforms.length === 0 && <tr><td colSpan={5} style={{textAlign:'center',color:'var(--ink-soft)',padding:'32px'}}>No uniforms yet.</td></tr>}
-              </tbody>
-            </table>
+
+            {/* Desktop table */}
+            <div className="admin-table-wrap">
+              <table className="data-table">
+                <thead><tr><th>ID</th><th>Type</th><th>Description</th><th>Image</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {uniforms.map(u => (
+                    <tr key={u.uniform_id}>
+                      <td>{u.uniform_id}</td>
+                      <td><strong>{u.uniform_type}</strong></td>
+                      <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.description}</td>
+                      <td>
+                        {u.image_path
+                          ? <img src={u.image_path} alt="" style={{ height: 40, borderRadius: 3 }} onError={e => e.target.style.display = 'none'} />
+                          : <span style={{ color: 'var(--ink-soft)', fontSize: '0.8rem' }}>None</span>}
+                      </td>
+                      <td>
+                        <div className="actions">
+                          <button className="btn btn-ghost btn-sm" onClick={() => setUModal(u)}>Edit</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteUniform(u.uniform_id)}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {uniforms.length === 0 && EMPTY(5, 'No uniforms yet.')}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards">
+              {uniforms.map(u => (
+                <UniformCard key={u.uniform_id} u={u} onEdit={setUModal} onDelete={deleteUniform} />
+              ))}
+              {uniforms.length === 0 && <p className="admin-empty">No uniforms yet.</p>}
+            </div>
           </div>
         )}
 
-        {/* PRICES TAB */}
+        {/* ── PRICES ── */}
         {tab === 'prices' && (
           <div className="fade-up">
             <div className="admin-section-header">
               <h2>Prices</h2>
-              <button className="btn btn-primary btn-sm" style={{width:'auto'}} onClick={() => setPModal('new')} disabled={uniforms.length===0}>
+              <button className="btn btn-primary btn-sm" style={{ width: 'auto' }} onClick={() => setPModal('new')} disabled={uniforms.length === 0}>
                 + Add Price
               </button>
             </div>
-            <table className="data-table">
-              <thead><tr><th>ID</th><th>Uniform</th><th>Size</th><th>Amount</th><th>Actions</th></tr></thead>
-              <tbody>
-                {allPrices.map(p => (
-                  <tr key={p.price_id}>
-                    <td>{p.price_id}</td>
-                    <td>{p.uniform_type}</td>
-                    <td><strong>{p.label}</strong></td>
-                    <td style={{color:'var(--accent)',fontWeight:700}}>₱ {parseFloat(p.amount).toFixed(2)}</td>
-                    <td>
-                      <div className="actions">
-                        <button className="btn btn-ghost btn-sm" onClick={() => setPModal(p)}>Edit</button>
-                        <button className="btn btn-danger btn-sm" onClick={() => deletePrice(p.price_id)}>Delete</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {allPrices.length === 0 && <tr><td colSpan={5} style={{textAlign:'center',color:'var(--ink-soft)',padding:'32px'}}>No prices yet.</td></tr>}
-              </tbody>
-            </table>
+
+            {/* Desktop table */}
+            <div className="admin-table-wrap">
+              <table className="data-table">
+                <thead><tr><th>ID</th><th>Uniform</th><th>Size</th><th>Amount</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {allPrices.map(p => (
+                    <tr key={p.price_id}>
+                      <td>{p.price_id}</td>
+                      <td>{p.uniform_type}</td>
+                      <td><strong>{p.label}</strong></td>
+                      <td style={{ color: 'var(--accent)', fontWeight: 700 }}>₱ {parseFloat(p.amount).toFixed(2)}</td>
+                      <td>
+                        <div className="actions">
+                          <button className="btn btn-ghost btn-sm" onClick={() => setPModal(p)}>Edit</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => deletePrice(p.price_id)}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {allPrices.length === 0 && EMPTY(5, 'No prices yet.')}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards">
+              {allPrices.map(p => (
+                <PriceCard key={p.price_id} p={p} onEdit={setPModal} onDelete={deletePrice} />
+              ))}
+              {allPrices.length === 0 && <p className="admin-empty">No prices yet.</p>}
+            </div>
           </div>
         )}
 
-        {/* STUDENTS TAB */}
+        {/* ── STUDENTS ── */}
         {tab === 'students' && (
           <div className="fade-up">
             <div className="admin-section-header">
               <h2>Registered Students</h2>
-              <span style={{color:'var(--ink-soft)',fontSize:'0.88rem'}}>{students.length} total</span>
+              <span style={{ color: 'var(--ink-soft)', fontSize: '0.88rem' }}>{students.length} total</span>
             </div>
-            <table className="data-table">
-              <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Registered</th></tr></thead>
-              <tbody>
-                {students.map(s => (
-                  <tr key={s.student_id}>
-                    <td>{s.student_id}</td>
-                    <td><strong>{s.student_name}</strong></td>
-                    <td>{s.email}</td>
-                    <td>{new Date(s.created_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' })}</td>
-                  </tr>
-                ))}
-                {students.length === 0 && <tr><td colSpan={4} style={{textAlign:'center',color:'var(--ink-soft)',padding:'32px'}}>No students registered yet.</td></tr>}
-              </tbody>
-            </table>
+
+            {/* Desktop table */}
+            <div className="admin-table-wrap">
+              <table className="data-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Registered</th></tr></thead>
+                <tbody>
+                  {students.map(s => (
+                    <tr key={s.student_id}>
+                      <td>{s.student_id}</td>
+                      <td><strong>{s.student_name}</strong></td>
+                      <td>{s.email}</td>
+                      <td>{new Date(s.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    </tr>
+                  ))}
+                  {students.length === 0 && EMPTY(4, 'No students registered yet.')}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="admin-cards">
+              {students.map(s => <StudentCard key={s.student_id} s={s} />)}
+              {students.length === 0 && <p className="admin-empty">No students registered yet.</p>}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modals */}
       {uModal && (
         <UniformModal
           uniform={uModal === 'new' ? null : uModal}
