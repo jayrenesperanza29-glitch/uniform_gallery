@@ -1,7 +1,3 @@
-#!/bin/bash
-# reset.sh — wipes the database volume and restarts all containers fresh
-# Run this whenever you change init.sql or need a clean slate.
-
 set -e
 
 echo ">>> Stopping and removing all containers..."

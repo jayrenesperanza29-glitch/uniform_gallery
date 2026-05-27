@@ -1,9 +1,3 @@
-#!/bin/bash
-# fix-passwords.sh
-# Run this ONCE against your live stack to fix all existing password hashes.
-# After this, do: docker compose up --build -d
-# Going forward, the entrypoint auto-seeds the admin on every restart.
-
 set -e
 
 echo ">>> Rebuilding backend with new code..."

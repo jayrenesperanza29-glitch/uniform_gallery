@@ -1,10 +1,3 @@
-"""
-Runs at startup via entrypoint.sh.
-1. Waits for the database to be ready.
-2. Creates tables if they don't exist (Render has no init.sql auto-run).
-3. Seeds the admin account with a correct werkzeug hash.
-4. Uploads seed images to Cloudinary if configured.
-"""
 import os
 import time
 import glob
@@ -16,7 +9,7 @@ from werkzeug.security import generate_password_hash
 DATABASE_URL = os.getenv("DATABASE_URL",
     "postgresql://uniform_user:uniform_pass@db:5432/uniform_gallery")
 
-# ── 1. Wait for DB ────────────────────────────────────────────────────────────
+# ── Wait for DB ────────────────────────────────────────────────────────────
 def wait_for_db(retries=15, delay=3):
     for i in range(retries):
         try:
@@ -29,7 +22,7 @@ def wait_for_db(retries=15, delay=3):
             time.sleep(delay)
     raise RuntimeError("[seed] Could not connect to database after retries")
 
-# ── 2. Create tables ──────────────────────────────────────────────────────────
+# ── Create tables ──────────────────────────────────────────────────────────
 CREATE_TABLES = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -118,7 +111,7 @@ SELECT 5, unnest(ARRAY['XS','S','M','L','XL','XXL']),
 WHERE NOT EXISTS (SELECT 1 FROM price WHERE uniform_id = 5);
 """
 
-# ── 3. Cloudinary image upload ────────────────────────────────────────────────
+# ── Cloudinary image upload ────────────────────────────────────────────────
 def upload_seed_images_to_cloudinary():
     try:
         import cloudinary

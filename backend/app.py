@@ -1,10 +1,3 @@
-"""
-Uniform Gallery – Flask Backend
-Auth: JWT (HS256) + PBKDF2-SHA256 password hashing
-DB:   PostgreSQL 16 via psycopg2
-Images: Cloudinary when env vars are set; local static/ fallback otherwise
-"""
-
 import os
 import binascii
 import datetime
@@ -133,8 +126,6 @@ def register():
           (name, email, _hash_password(pw)), commit=True)
     row = query("SELECT student_id, student_name, email FROM student WHERE email=%s",
                 (email,), one=True)
-    # Return a token so callers can optionally use it, but the frontend
-    # redirects to /login instead of auto-logging in.
     token = _make_token({"sub": row["student_id"], "name": row["student_name"],
                          "email": email, "is_admin": False})
     return jsonify({"token": token, "user": dict(row)}), 201

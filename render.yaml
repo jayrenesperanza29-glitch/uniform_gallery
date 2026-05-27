@@ -1,12 +1,3 @@
-##############################################################
-#  render.yaml  –  Uniform Gallery full-stack Blueprint
-#
-#  Provisions in one click:
-#    • uniform-db       – PostgreSQL (free)
-#    • uniform-backend  – Python/Flask web service (free)
-#    • uniform-frontend – Static site / Vite (free)
-##############################################################
-
 databases:
   - name: uniform-db
     databaseName: uniform_gallery

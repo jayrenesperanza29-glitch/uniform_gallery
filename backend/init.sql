@@ -1,8 +1,3 @@
--- Uniform Gallery – Database Schema
--- NOTE: The admin password hash is set correctly by seed_admin.py at startup.
---       The placeholder row below is intentionally a known-bad hash so that
---       nobody can log in before seed_admin.py runs.
-
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS student (
