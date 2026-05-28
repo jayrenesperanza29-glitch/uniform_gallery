@@ -22,7 +22,7 @@ export default function Dashboard() {
             {greeting()}, {user?.name?.split(" ")[0]}.
           </h1>
           <p>
-            Browse the official school uniform gallery and check current prices.
+            Browse the official DLSP uniform gallery and check current prices.
           </p>
         </header>
 
@@ -31,8 +31,7 @@ export default function Dashboard() {
             <div className="dash-card-icon">👔</div>
             <h3>View Gallery & Price List</h3>
             <p>
-              Browse all approved school uniforms with images and prices per
-              size.
+              Browse all approved DLSP uniforms with images and prices per size.
             </p>
           </Link>
 
@@ -60,7 +59,7 @@ export default function Dashboard() {
           }}
         >
           <p>
-            School Uniform Gallery · Official Reference System ·{" "}
+            DLSP Uniform Gallery · Official Reference System ·{" "}
             {new Date().getFullYear()}
           </p>
         </footer>

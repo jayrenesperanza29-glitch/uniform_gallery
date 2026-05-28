@@ -64,8 +64,8 @@ export default function GalleryPage() {
       <div className="page-content">
         <header className="page-header fade-up">
           <div className="eyebrow">Gallery</div>
-          <h1>Uniform Gallery & Price List</h1>
-          <p>Official school-approved attire with current prices per size.</p>
+          <h1>DLSP Uniform Gallery & Price List</h1>
+          <p>Official DLSP-approved attire with current prices per size.</p>
         </header>
 
         {loading && (

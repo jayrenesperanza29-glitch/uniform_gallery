@@ -40,9 +40,9 @@ export default function RegisterPage() {
       <div className="auth-art">
         <div className="auth-art-inner">
           <span className="auth-art-badge">New Student</span>
-          <h1>Join the Uniform Gallery</h1>
+          <h1>Join the DLSP Uniform Gallery</h1>
           <p>
-            Create your student account to browse official school uniforms and
+            Create your student account to browse official DLSP uniforms and
             current pricing information.
           </p>
         </div>

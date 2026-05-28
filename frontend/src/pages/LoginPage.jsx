@@ -32,9 +32,9 @@ export default function LoginPage() {
       <div className="auth-art">
         <div className="auth-art-inner">
           <span className="auth-art-badge">Student Portal</span>
-          <h1>School Uniform Gallery & Price List</h1>
+          <h1>DLSP Uniform Gallery & Price List</h1>
           <p>
-            Your official reference for approved school attire, complete with
+            Your official reference for approved DLSP attire, complete with
             sizing guides and current prices.
           </p>
         </div>
