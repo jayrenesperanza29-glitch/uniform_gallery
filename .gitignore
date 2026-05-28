@@ -13,10 +13,6 @@ __pycache__/
 .venv/
 venv/
 
-# Uploads (local dev only — use Cloudinary in production)
-backend/static/images/
-!backend/static/images/.gitkeep
-
 # OS
 .DS_Store
 Thumbs.db
