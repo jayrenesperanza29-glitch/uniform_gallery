@@ -22,6 +22,25 @@ def wait_for_db(retries=15, delay=3):
             time.sleep(delay)
     raise RuntimeError("[seed] Could not connect to database after retries")
 
+# ── One-time migrations (safe to re-run) ──────────────────────────────────
+MIGRATE = """
+-- Add UNIQUE constraint on uniform_type if missing.
+-- This is the root fix for the duplicate-on-restart bug.
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uniform_uniform_type_key'
+    ) THEN
+        -- Remove duplicates first (keep the lowest ID per type)
+        DELETE FROM uniform
+        WHERE uniform_id NOT IN (
+            SELECT MIN(uniform_id) FROM uniform GROUP BY uniform_type
+        );
+        ALTER TABLE uniform ADD CONSTRAINT uniform_uniform_type_key UNIQUE (uniform_type);
+    END IF;
+END $$;
+"""
+
 # ── Create tables ──────────────────────────────────────────────────────────
 CREATE_TABLES = """
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -201,6 +220,11 @@ def seed():
 
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     cur  = conn.cursor()
+
+    # Run migrations (safe to re-run — fixes duplicate bug on existing DBs)
+    cur.execute(MIGRATE)
+    conn.commit()
+    print("[seed] Migrations OK")
 
     # Create tables
     cur.execute(CREATE_TABLES)
