@@ -231,6 +231,12 @@ def update_uniform(uid):
 @jwt_required
 @admin_required
 def delete_uniform(uid):
+    row = query("SELECT uniform_type FROM uniform WHERE uniform_id=%s", (uid,), one=True)
+    if row:
+        query(
+            "INSERT INTO uniform_deleted (uniform_type) VALUES (%s) ON CONFLICT DO NOTHING",
+            (row["uniform_type"],), commit=True
+        )
     query("DELETE FROM uniform WHERE uniform_id=%s", (uid,), commit=True)
     return jsonify({"message": "Deleted"})
 

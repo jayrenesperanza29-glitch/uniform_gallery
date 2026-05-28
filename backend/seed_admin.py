@@ -39,6 +39,12 @@ BEGIN
         ALTER TABLE uniform ADD CONSTRAINT uniform_uniform_type_key UNIQUE (uniform_type);
     END IF;
 END $$;
+
+-- Create tombstone table if it doesn't exist yet (existing deployments)
+CREATE TABLE IF NOT EXISTS uniform_deleted (
+    uniform_type VARCHAR(120) PRIMARY KEY,
+    deleted_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 """
 
 # ── Create tables ──────────────────────────────────────────────────────────
@@ -72,6 +78,12 @@ CREATE TABLE IF NOT EXISTS price (
     uniform_id INTEGER NOT NULL REFERENCES uniform(uniform_id) ON DELETE CASCADE,
     label      VARCHAR(80) DEFAULT 'Standard',
     amount     NUMERIC(10,2) NOT NULL
+);
+
+-- Tombstone: tracks uniforms deleted by an admin so the seed never re-adds them
+CREATE TABLE IF NOT EXISTS uniform_deleted (
+    uniform_type VARCHAR(120) PRIMARY KEY,
+    deleted_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 """
 
@@ -124,6 +136,10 @@ INSERT INTO uniform (uniform_type, description, image_path) VALUES
     '/static/images/pe_pants.jpg'
 )
 ON CONFLICT (uniform_type) DO NOTHING;
+
+-- Remove any just-inserted uniforms that were previously deleted by an admin
+DELETE FROM uniform
+WHERE uniform_type IN (SELECT uniform_type FROM uniform_deleted);
 
 INSERT INTO price (uniform_id, label, amount)
 SELECT u.uniform_id, v.label, v.amount
