@@ -57,7 +57,7 @@ INSERT INTO uniform (uniform_type, description, image_path) VALUES
     '/static/images/official_uniform__female__bottom.jpg'
 ),
 (
-    'PE Shirt',
+    'Official PE Shirt',
     'Physical Education shirt in DLSP school colors — dark green sides with white center panel and school emblem. Required every PE class schedule.',
     '/static/images/pe_shirt.jpg'
 ),
@@ -101,12 +101,12 @@ JOIN (VALUES
     ('Official Uniform (Female) - Bottom', 'XL',  380),
     ('Official Uniform (Female) - Bottom', 'XXL', 400),
 
-    ('PE Shirt', 'XS',  280),
-    ('PE Shirt', 'S',   280),
-    ('PE Shirt', 'M',   280),
-    ('PE Shirt', 'L',   300),
-    ('PE Shirt', 'XL',  320),
-    ('PE Shirt', 'XXL', 340),
+    ('Official PE Shirt', 'XS',  280),
+    ('Official PE Shirt', 'S',   280),
+    ('Official PE Shirt', 'M',   280),
+    ('Official PE Shirt', 'L',   300),
+    ('Official PE Shirt', 'XL',  320),
+    ('Official PE Shirt', 'XXL', 340),
 
     ('Official PE Pants', 'XS',  280),
     ('Official PE Pants', 'S',   280),

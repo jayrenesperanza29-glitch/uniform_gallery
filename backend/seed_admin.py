@@ -45,6 +45,39 @@ CREATE TABLE IF NOT EXISTS uniform_deleted (
     uniform_type VARCHAR(120) PRIMARY KEY,
     deleted_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Reassign uniform IDs to be continuous (1, 2, 3, ...) with no gaps.
+-- Prices are updated via CASCADE-aware temp mapping so foreign keys stay intact.
+DO $$
+DECLARE
+    r        RECORD;
+    new_id   INT := 1;
+    max_id   INT;
+BEGIN
+    -- Only run if there are gaps
+    SELECT MAX(uniform_id) INTO max_id FROM uniform;
+    IF max_id IS NULL OR max_id = (SELECT COUNT(*) FROM uniform) THEN
+        -- No gaps, nothing to do
+    ELSE
+        -- Temporarily drop the FK so we can reassign IDs freely
+        ALTER TABLE price DROP CONSTRAINT IF EXISTS price_uniform_id_fkey;
+
+        FOR r IN SELECT uniform_id FROM uniform ORDER BY uniform_id LOOP
+            IF r.uniform_id <> new_id THEN
+                UPDATE price   SET uniform_id = new_id WHERE uniform_id = r.uniform_id;
+                UPDATE uniform SET uniform_id = new_id WHERE uniform_id = r.uniform_id;
+            END IF;
+            new_id := new_id + 1;
+        END LOOP;
+
+        -- Restore the FK
+        ALTER TABLE price ADD CONSTRAINT price_uniform_id_fkey
+            FOREIGN KEY (uniform_id) REFERENCES uniform(uniform_id) ON DELETE CASCADE;
+
+        -- Reset the sequence so the next INSERT continues from the right number
+        PERFORM setval('uniform_uniform_id_seq', (SELECT MAX(uniform_id) FROM uniform));
+    END IF;
+END $$;
 """
 
 # ── Create tables ──────────────────────────────────────────────────────────
@@ -126,7 +159,7 @@ INSERT INTO uniform (uniform_type, description, image_path) VALUES
     '/static/images/official_uniform__female__bottom.jpg'
 ),
 (
-    'PE Shirt',
+    'Official PE Shirt',
     'Physical Education shirt in DLSP school colors — dark green sides with white center panel and school emblem. Required every PE class schedule.',
     '/static/images/pe_shirt.jpg'
 ),
@@ -173,12 +206,12 @@ JOIN (VALUES
     ('Official Uniform (Female) - Bottom', 'XL',  380),
     ('Official Uniform (Female) - Bottom', 'XXL', 400),
 
-    ('PE Shirt', 'XS',  280),
-    ('PE Shirt', 'S',   280),
-    ('PE Shirt', 'M',   280),
-    ('PE Shirt', 'L',   300),
-    ('PE Shirt', 'XL',  320),
-    ('PE Shirt', 'XXL', 340),
+    ('Official PE Shirt', 'XS',  280),
+    ('Official PE Shirt', 'S',   280),
+    ('Official PE Shirt', 'M',   280),
+    ('Official PE Shirt', 'L',   300),
+    ('Official PE Shirt', 'XL',  320),
+    ('Official PE Shirt', 'XXL', 340),
 
     ('Official PE Pants', 'XS',  280),
     ('Official PE Pants', 'S',   280),
